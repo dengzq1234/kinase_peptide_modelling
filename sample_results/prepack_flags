@@ -1,0 +1,10 @@
+-database /g/easybuild/x86_64/CentOS/7/nehalem/software/Rosetta/2017.45.59812-foss-2016b/database
+-s ./results/chk1_2ydimodel_2phkmuta_TQRQNSAP.pdb
+-extra_res_fa inputdata/param_file/ATP.params
+-ex1
+-ex2aro
+-use_input_sc
+-flexpep_score_only
+-ignore_unrecognized_res
+-out:path:all ./results/prepacked_output/
+-flexpep_prepack

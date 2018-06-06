@@ -1,0 +1,15 @@
+-database /g/easybuild/x86_64/CentOS/7/nehalem/software/Rosetta/2017.45.59812-foss-2016b/database
+-s ./results/prepacked_output/chk1_2ydimodel_2phkmuta_TQRQNSAP_top.pdb
+-extra_res_fa inputdata/param_file/ATP.params
+-constraints:cst_fa_file inputdata/param_file/constraint_super
+-constraints:cst_fa_weight 1.0
+-ex1
+-ex2aro
+-use_input_sc
+-lowres_preoptimize
+-nstruct 200
+-pep_refine
+-ignore_unrecognized_res
+-scorefile low_refine.score.sc
+-out:path:all ./results/refined_output/chk1_2ydimodel_2phkmuta_TQRQNSAP_top/
+-flexpep_score_only

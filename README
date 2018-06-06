@@ -1,0 +1,88 @@
+This is the pipeline to simulate kinase-peptide interaction
+
+The idea of this pipeline is to dock specific peptide to kinase strcture and process comparative analysis of performance between kinase structures and peptides.
+
+author: Deng Ziqi
+contacts: dengziqi1234@gmail.com
+
+"""Required modules"""
+1)OpenBabel
+2)pymol
+3)Biopython
+4)Rosetta
+
+"""Content of the program"""
+It contains:
+1)bin folder: It contains all the necessary script 
+2)inputdata folder: It has the peptide_instance list and parameters file containing ATP parameters files and constraint file
+3)main_final.py: the main python script
+4)sample_results: test_results folder to let you know what will you get
+5)sbatch_job.sh: sbatch script. If you work with many input peptide_instance, it is recommended that work on cluster with this script.
+
+"""Usage"""
+Usage:
+python main_final.py kinase_name model_pdb template_pdb peptide_instance
+
+Arguments Explaining:
+
+input1: kinase_name(string), the name of kinase you would like to model, it's used for naming your outputfile. 
+
+input2: model_pdb(string), the kinase structure you would like to dock peptides to, it's supposed to be 4 characters PDB ID.
+
+input3: template_pdb(string), the template structure which provides position for model_pdb and peptide_instance
+NOTE: Please notice it is highly recommended that using PHK kinase(PDB:2phk) as template. Due to the following reasons: 1)It contains ATP; 2)The peptide_mutagensis step is based on peptide position of 2phk. Different kinases has different peptide starting positions(some start from 2, some start from 5), which is complicate to have a universal standard; 
+
+input4: peptide_instance(file), the file contains a list of peptides from instances. Each peptide should be 8 amino acids long with Serine in the 6th position.
+
+Example:
+python main_final.py chk1 2ydi 2phk peptide_candidate_test
+
+
+output:
+
+output would be in "results" folder, it should contain:
+
+1)The "mutated" kinase-peptide complexs pdb file before being processed by flexpeptdock, chain A is the model structure and ATP; chain B is peptide from instance_list
+
+2)"prepack_flags", "refine_flags_low", "refine_flags_high", three flags files, which is flags file of step of prepack ,pre_lowoptimization refinement and high resolution refinement.
+
+3)"prepacked_output/" folder, the directory contains: a)prepacked kinase-peptide complex pdb file(s); b) score.sc, the prepack score of the prepacked file(s) 
+
+4)"refined_output" folder, 
+the directory contains the FINAL RESULTS:
+
+a)"*top/", kinase-peptide complex output, it contains the "*top10_models" folder which includes top10 simulation models and the score list and total 500 simulated structures(200low,300high)
+
+b)"contacs/", it contains all the ".contacts" result of each kinase_peptide top10 model. 
+And "total_contacts" is the concatenation of contacts detail of the all the ".contacts" file under this folder. 
+"total_contacts_sum" is dataframe combining the sum of each contacts type of each kinase_peptide top10 model.
+
+c)"all_results/", it contains all the aprggio analysis output of the top10_models of each kinase-peptide model
+
+NOTE: It's necessary to remove or rename the "results" folder before your second run, otherwise it will cause confilcts.
+
+"""Parameter setting"""
+1)Basic flags setting
+If you need to change the parameters of flexpepdock prepack or/and refine step. Please go to prepack function(line 205),low_refine function(line 248) and high_refine(line 296). In order to understand more information of flags setting in rosetta, please go to https://www.rosettacommons.org/docs/latest/application_documentation/docking/flex-pep-dock
+
+2)Constain file and ATP params file
+If you need to change the parameter of constraint file, ATP params file. Please go to inputdata/param_file/ directory and customize your demand.
+
+3)Mpirun nodes number
+The default mpirun nodes number is 30, please make sure the number should be below the -N number from your sbacth script.
+
+"""ATP parameters"""
+In order to keep ATP in the pocket, it requires the ATP.param file and put -extra_res_fa flag while the prepack and refine step
+
+ATP param files contains: ATP.params, ATP.conformers and ATP.pdb
+
+"""Constraint file"""
+the default constraint content:
+1)Distance between Serine(P0) and Pγ of ATP(2 lines)
+2)Dihedral between Serine and Pγ of ATP
+3)Dihedral between Serine and P+1 amino acid
+4)Distance between P+1 residue and Specificity Determination Pocket of Kinase(2 lines)
+5)Distance between P-3 residue and anchor residue of kinase(Glu91,Pro172)
+6)Distance between P+2 residue and DFG+1 residue
+Note: if your input peptide instance's phosphorylation site is not Serine or serine is not at the 6th position, you may need to change the constraint file according to the atom's position and names.
+
