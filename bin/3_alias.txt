@@ -1,4 +1,0 @@
-alias chim='/Applications/Chimera.app/Contents/MacOS/chimera'
-alias pymol='/Applications/MacPyMOL.app/Contents/MacOS/MacPyMOL'
-alias ligplus='java -cp /Users/ziqideng/Desktop/replace_instance/LigPlus -jar /Users/ziqideng/Desktop/replace_instance/LigPlus/LigPlus.jar'
-chim --nogui --nostatus --script "/Users/ziqideng/Desktop/replace_instance/test/auto_findhbond_test.py"
