@@ -13,7 +13,6 @@ input_data_folder = './inputdata/'
 result_folder = './results/'
 
 #load peptide instance
-
 def AAcode_1_to_3(seq):
     """change peptide from 1 letter to 3 letter"""
 
@@ -102,8 +101,6 @@ def ATPchange(filename):
     return 
 
 def Mutagenesis(kinase1, model, template,peptide_instance):
-    
-
     """superposition the model and template, remove template and leave peptide behind """
 
     """replace peptide with instance peptide"""
@@ -158,13 +155,10 @@ def Mutagenesis(kinase1, model, template,peptide_instance):
         cmd.save(filename)
         ATPchange(filename) #change ATP naming to the format of ATP.params
     cmd.wizard(None)
-    
     return
 
+#execute Mutagenesis step in pymol nogui mode
 cmd.extend("Mutagenesis_model", Mutagenesis)
-
-     
-
 if __name__ == "__main__":
     kinase1 = sys.argv[1]
     model = sys.argv[2]
@@ -172,10 +166,11 @@ if __name__ == "__main__":
     peptide_instance = sys.argv[4]
     command = 'Mutagenesis '+ sys.argv[1]+','+sys.argv[2]+','+sys.argv[3]+','+sys.argv[4]
 
+
+#collect the models for the prepack mode
 os.mkdir('results/')
 subprocess.call(['pymol', sys.argv[0],'-qcd',command])
-#print(glob.glob('*.pdb')) #next input
-
+#print(glob.glob('*.pdb'))
 pdb_filenames = glob.glob('*.pdb')
 print pdb_filenames
 core_list =[]
@@ -201,8 +196,9 @@ output(core) = chk1_2ydimodel_2phkmuta_LLRLCTW
 prepacked_path = result_folder + 'prepacked_output/'
 os.mkdir(prepacked_path)
 
-"""prepare the prepack falgs"""
+
 def prepack(pdb):
+	"""prepare the prepack flags"""
     with open('prepack_flags', 'w') as flag:  # prepare the prepack flags
         flag.write('-database /g/easybuild/x86_64/CentOS/7/nehalem/software/Rosetta/2017.45.59812-foss-2016b/database\n')
         flag.write('-s' + ' ' + result_folder + pdb + '\n')
@@ -217,9 +213,9 @@ def prepack(pdb):
         flag.write('-flexpep_prepack\n')
     subprocess.call(['FlexPepDocking.mpi.linuxgccrelease', '@prepack_flags'])
 
-#get all pdb file
+
 def get_allpdbfile(path):
-    
+    """get all pdb file"""
     f_list = os.listdir(path)
     prepack_pdb = []
     print f_list
@@ -241,12 +237,12 @@ for core in core_list:
     print "we are gonna change this name:", pdb_atms_prepcked_filename
     shutil.move(prepacked_path + pdb_atms_prepcked_filename, prepacked_path + core + '_top.pdb')
 
-
+#creat the directory for refine models
 refined_path = result_folder + 'refined_output/'
 os.mkdir(refined_path)
 
 def low_refine(pdb_atms_prepcked_filename):
-
+    """prepare the lowrefinement flags document"""
     pdb_atms_prepcked_filename_core = os.path.splitext(pdb_atms_prepcked_filename)[0] #core no pdb tail
     refined_model_path = refined_path + pdb_atms_prepcked_filename_core + '/'
     os.mkdir(refined_model_path)  
@@ -276,24 +272,17 @@ def low_refine(pdb_atms_prepcked_filename):
     return
 
 
-"""if __name__ == "__main__":
-    pdb_atms_prepcked_filename = sys.argv[1]
-    refine(pdb_atms_prepcked_filename) """
-
 """get the refined results and collect them to refined folder"""
 for prepacked_pdb in os.listdir(prepacked_path): #happend in prepack folder
     if os.path.splitext(prepacked_pdb)[1] == ".pdb":
         print(prepacked_pdb)
         low_refine(prepacked_pdb)
 
-
-
-
-
 #refined_path_high = result_folder + 'refined_output_high/'
 #os.mkdir(refined_path_high)
 
 def high_refine(pdb_atms_prepcked_filename):
+	"""prepare the highrefinement flags document"""
     pdb_atms_prepcked_filename_core = os.path.splitext(pdb_atms_prepcked_filename)[0] #with _top
     refined_model_path = refined_path + pdb_atms_prepcked_filename_core + '/'
     #os.mkdir(refined_model_path) 
@@ -335,26 +324,15 @@ for refined_folder in os.listdir('.'):
     print refined_folder
     refined_model_list.append(refined_folder)
 os.chdir(main_folder)
-#for high_refined_file in glob.glob('*[0-9].pdb'):
-#    print high_refined_file
-#    new_name_high = os.path.splitext(high_refined_file)[0] +"_high.pdb"
-#    shutil.move(high_refined_file, new_name_high)
 
-"""move files"""
-
-
-#shutil.move('low_refine.score.sc', refined_path + 'low_refine.score.sc')
-#shutil.move('high_refine.score.sc', refined_path + 'high_refine.score.sc')
-#shutil.move('score.sc', prepacked_path+'score.sc')
+#move the ouput files to target folder
 shutil.move('refine_flags_high',result_folder+'refine_flags_high')
 shutil.move('refine_flags_low',result_folder+'refine_flags_low')
 shutil.move('prepack_flags',result_folder+'prepack_flags')
 
-#select top10 among 200
-#os.chdir(refined_path)
-#print "let's stop at line 268"
 
 def select_top10(refined_foldername):
+	"""select top10 among all models based on score"""
     refined_model_path = refined_foldername+'/'
     os.chdir(refined_path+refined_foldername)
     print(os.getcwd())
